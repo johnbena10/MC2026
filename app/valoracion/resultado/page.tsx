@@ -10,8 +10,10 @@ import {
   type ValoracionScores,
 } from "@/lib/valoracion"
 import { ConsciousnessRadarChart } from "@/components/consciousness-radar-chart"
+import { ProgressChart } from "@/components/progress-chart"
+import { SuggestionNotification } from "@/components/suggestion-notification"
 import { Button } from "@/components/ui/button"
-import { Clock, History, Trash2, RotateCcw, TrendingUp, Check, ChevronRight } from "lucide-react"
+import { Clock, History, RotateCcw, TrendingUp, Check, ChevronRight } from "lucide-react"
 
 interface SessionResult {
   scores: ValoracionScores
@@ -81,18 +83,6 @@ export default function ResultadoPage() {
       })
     }
   }, [result])
-
-  const deleteFromHistory = (id: string) => {
-    setHistory((prev) => {
-      const newHistory = prev.filter((entry) => entry.id !== id)
-      if (newHistory.length === 0) {
-        localStorage.removeItem("valoracion-history")
-      } else {
-        localStorage.setItem("valoracion-history", JSON.stringify(newHistory))
-      }
-      return newHistory
-    })
-  }
 
   const handleNewValoracion = () => {
     sessionStorage.removeItem("valoracion-result")
@@ -227,7 +217,7 @@ export default function ResultadoPage() {
         </div>
 
         {/* Explanation */}
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-muted/50 to-muted/30 border border-border/50 mb-8">
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-muted/50 to-muted/30 border border-border/50 mb-6">
           <p className="text-sm font-semibold text-foreground mb-3">
             Analisis
           </p>
@@ -236,8 +226,13 @@ export default function ResultadoPage() {
           </p>
         </div>
 
+        {/* Progress Chart */}
+        <div className="mb-8">
+          <ProgressChart history={history} />
+        </div>
+
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-12">
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <Button
             onClick={handleNewValoracion}
             className="flex-1 h-14 text-base font-semibold rounded-full shadow-lg shadow-primary/20"
@@ -266,8 +261,8 @@ export default function ResultadoPage() {
               <TrendingUp className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">Ver mi evolucion</p>
-              <p className="text-xs text-muted-foreground">Grafica completa de todas tus valoraciones</p>
+              <p className="text-sm font-semibold text-foreground">Ver mi evolucion completa</p>
+              <p className="text-xs text-muted-foreground">Grafica de todas tus valoraciones</p>
             </div>
           </div>
           <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -287,33 +282,34 @@ export default function ResultadoPage() {
                 const entryLevel = CONSCIOUSNESS_LEVELS.find(
                   (l) => l.name.toLowerCase() === entry.predominant.toLowerCase()
                 )
+                const areaData = LIFE_AREAS.find(
+                  (a) => a.name === entry.selectedArea || a.key === entry.selectedArea
+                )
                 return (
                   <div
                     key={entry.id}
                     className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
                   >
                     <div className="flex items-center gap-3">
-                      <span
-                        className="text-lg font-bold w-10"
-                        style={{ color: entryLevel?.color }}
-                      >
-                        {entry.predominantValue}
-                      </span>
+                      <div 
+                        className="w-1 h-10 rounded-full"
+                        style={{ backgroundColor: areaData?.color }}
+                      />
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          {entry.selectedArea}
+                          {areaData?.name.split(" ")[0] || entry.selectedArea}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {entry.date}
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => deleteFromHistory(entry.id)}
-                      className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                    <span
+                      className="text-lg font-bold"
+                      style={{ color: entryLevel?.color }}
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                      {entry.predominantValue}
+                    </span>
                   </div>
                 )
               })}
@@ -321,6 +317,9 @@ export default function ResultadoPage() {
           </div>
         )}
       </div>
+
+      {/* Suggestion Notification */}
+      <SuggestionNotification history={history} />
     </main>
   )
 }
