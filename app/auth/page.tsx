@@ -14,7 +14,9 @@ import {
   Mail,
   User,
   Eye,
-  EyeOff
+  EyeOff,
+  DollarSign,
+  Zap
 } from "lucide-react"
 
 export default function AuthPage() {
@@ -32,10 +34,8 @@ export default function AuthPage() {
     e.preventDefault()
     setIsLoading(true)
     
-    // Simulate auth process
     await new Promise(resolve => setTimeout(resolve, 1500))
     
-    // Store user in localStorage for demo
     localStorage.setItem("user", JSON.stringify({
       name: formData.name || "Usuario",
       email: formData.email,
@@ -52,23 +52,56 @@ export default function AuthPage() {
         
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           
-          {/* Left: Benefits */}
+          {/* Left: Offer */}
           <div className="space-y-8">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                <Sparkles className="w-4 h-4" />
-                Acceso Inmediato
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-sm font-semibold mb-4">
+                <Zap className="w-4 h-4" />
+                Oferta por tiempo limitado
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-4">
-                Descubre tu nivel de conciencia{" "}
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-4 text-balance">
+                Accede al sistema completo de{" "}
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  en minutos
+                  valoracion de conciencia
                 </span>
               </h1>
               <p className="text-muted-foreground leading-relaxed">
-                Accede al sistema completo de valoracion basado en la escala del Dr. David Hawkins 
-                y empieza a medir tu evolucion real.
+                Basado en la escala del Dr. David Hawkins. Mide, visualiza y eleva tu nivel 
+                de conciencia en las 8 areas fundamentales de tu vida.
               </p>
+            </div>
+
+            {/* Price Box */}
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 border border-primary/30">
+              <div className="flex items-center gap-2 mb-4">
+                <DollarSign className="w-5 h-5 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Inversion mensual</span>
+              </div>
+              
+              <div className="flex items-baseline gap-3 mb-2">
+                <span className="text-2xl text-muted-foreground line-through">$297</span>
+                <span className="text-5xl font-bold text-foreground">$27</span>
+                <span className="text-lg text-muted-foreground">USD/mes</span>
+              </div>
+              
+              <p className="text-sm text-muted-foreground mb-4">
+                Ahorra $270 USD cada mes con esta oferta especial
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Sin contratos
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Cancela cuando quieras
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Acceso inmediato
+                </span>
+              </div>
             </div>
 
             {/* What's included */}
@@ -78,17 +111,17 @@ export default function AuthPage() {
               </h3>
               <div className="space-y-3">
                 {[
-                  "Valoracion en 8 areas de vida",
+                  "Valoracion ilimitada en 8 areas de vida",
                   "Entrevista adaptativa con IA (5 preguntas por area)",
                   "Resultado calibrado 0-1000 segun Hawkins",
                   "Emocion dominante identificada",
-                  "Recomendacion personalizada",
-                  "Historial completo de valoraciones",
+                  "Recomendacion personalizada para elevar tu nivel",
+                  "Historial completo de todas tus valoraciones",
                   "Graficas de evolucion temporal",
-                  "Acceso ilimitado de por vida",
+                  "Identificacion de patrones que afectan tu vida",
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                     <span className="text-sm text-foreground">{item}</span>
                   </div>
                 ))}
@@ -103,11 +136,11 @@ export default function AuthPage() {
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Lock className="w-4 h-4 text-emerald-500" />
-                Conexion segura
+                Conexion segura SSL
               </div>
             </div>
 
-            {/* Testimonial placeholder */}
+            {/* Testimonial */}
             <div className="p-5 rounded-2xl bg-muted/50 border border-border/50">
               <p className="text-sm text-muted-foreground italic mb-3">
                 "Por primera vez entendi por que me sentia estancado. El area de finanzas 
@@ -127,7 +160,7 @@ export default function AuthPage() {
               <div className="flex p-1 rounded-full bg-muted/50 mb-6">
                 <button
                   onClick={() => setIsLogin(false)}
-                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-medium transition-all ${
+                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-medium transition-all duration-300 ${
                     !isLogin 
                       ? "bg-primary text-primary-foreground shadow-md" 
                       : "text-muted-foreground hover:text-foreground"
@@ -137,7 +170,7 @@ export default function AuthPage() {
                 </button>
                 <button
                   onClick={() => setIsLogin(true)}
-                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-medium transition-all ${
+                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-medium transition-all duration-300 ${
                     isLogin 
                       ? "bg-primary text-primary-foreground shadow-md" 
                       : "text-muted-foreground hover:text-foreground"
@@ -201,7 +234,7 @@ export default function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -211,7 +244,7 @@ export default function AuthPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-14 text-base font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                  className="group w-full h-14 text-base font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">
@@ -222,13 +255,22 @@ export default function AuthPage() {
                       Procesando...
                     </span>
                   ) : (
-                    <span className="flex items-center gap-2">
-                      {isLogin ? "Acceder a mi cuenta" : "Crear cuenta y comenzar"}
-                      <ArrowRight className="w-5 h-5" />
+                    <span className="flex items-center justify-center gap-2">
+                      {isLogin ? "Acceder por $27/mes" : "Comenzar por $27/mes"}
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </span>
                   )}
                 </Button>
               </form>
+
+              {/* Price reminder */}
+              <div className="mt-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  <span className="line-through">$297</span>{" "}
+                  <span className="font-bold text-foreground">$27 USD/mes</span>
+                  {" "}- Ahorra 91%
+                </p>
+              </div>
 
               {/* Terms */}
               <p className="mt-4 text-xs text-center text-muted-foreground">
@@ -248,23 +290,23 @@ export default function AuthPage() {
                   <Shield className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-foreground">
-                      Garantia de satisfaccion
+                      Garantia de satisfaccion de 7 dias
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Si no estas satisfecho en los primeros 7 dias, te devolvemos tu dinero sin preguntas.
+                      Si no estas satisfecho, te devolvemos tu dinero sin preguntas.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick access for demo */}
-            <div className="mt-4 text-center">
+            {/* Demo link */}
+            <div className="mt-4 flex justify-center">
               <Link 
                 href="/valoracion" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
               >
-                Probar demo sin registro
+                Probar demo gratuita
               </Link>
             </div>
           </div>

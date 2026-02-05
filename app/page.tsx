@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { 
@@ -15,7 +17,9 @@ import {
   Users,
   Flame,
   CheckCircle2,
-  Zap
+  Zap,
+  DollarSign,
+  Clock
 } from "lucide-react"
 
 export default function Home() {
@@ -25,7 +29,7 @@ export default function Home() {
         
         {/* Hero Hook */}
         <header className="text-center space-y-6 mb-16">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight text-balance">
             <span className="text-muted-foreground">Y si pudieras ver,</span>
             <br />
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
@@ -40,7 +44,7 @@ export default function Home() {
 
         {/* Product Intro */}
         <section className="mb-16 p-6 md:p-8 rounded-3xl bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5 border border-primary/20">
-          <p className="text-base md:text-lg text-foreground leading-relaxed text-center">
+          <p className="text-base md:text-lg text-foreground leading-relaxed text-center text-pretty">
             Un software basado en la tabla de niveles de conciencia del{" "}
             <span className="font-bold text-primary">Dr. David Hawkins</span> que analiza 
             tus respuestas, identifica tu nivel real en{" "}
@@ -324,12 +328,73 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Price Anchor Section */}
+        <section className="mb-16 p-6 md:p-8 rounded-3xl bg-gradient-to-br from-yellow-500/10 via-primary/10 to-accent/10 border border-yellow-500/30">
+          <div className="text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-sm font-semibold">
+              <DollarSign className="w-4 h-4" />
+              El valor real de esta herramienta
+            </div>
+            
+            <div className="space-y-4">
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Contratar a un profesional certificado en la metodologia Hawkins para hacer este tipo de valoracion puede costar{" "}
+                <span className="font-bold text-foreground">miles de dolares</span>.
+              </p>
+              <p className="text-base text-muted-foreground">
+                Y muy pocas personas en el mundo estan realmente capacitadas para hacerlo bien.
+              </p>
+              <p className="text-lg text-muted-foreground">
+                Una sesion de coaching profundo con medicion de conciencia tiene un valor de mercado de{" "}
+                <span className="font-bold text-foreground">$150 a $500 USD por hora</span>.
+              </p>
+            </div>
+
+            <div className="py-6 space-y-4">
+              <div className="flex items-center justify-center gap-4">
+                <span className="text-2xl text-muted-foreground line-through">$297 USD/mes</span>
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-500 text-sm font-bold">
+                  -91% OFF
+                </span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-5xl md:text-6xl font-bold text-foreground">$27</span>
+                <div className="text-left">
+                  <span className="text-xl font-bold text-foreground">USD</span>
+                  <p className="text-sm text-muted-foreground">/mes</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Acceso ilimitado a todas las valoraciones y funciones
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                Sin contratos
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                Cancela cuando quieras
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-emerald-500" />
+                Acceso inmediato
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA 1 */}
-        <section className="mb-16 text-center">
+        <section className="mb-16 flex justify-center">
           <Link href="/auth">
-            <Button size="lg" className="h-16 px-10 text-lg font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:scale-105 transition-all">
+            <Button 
+              size="lg" 
+              className="group h-16 px-10 text-lg font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 animate-pulse hover:animate-none"
+            >
               QUIERO DESCUBRIR MI NIVEL DE CONCIENCIA AHORA
-              <ArrowRight className="ml-3 h-6 w-6" />
+              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </section>
@@ -384,11 +449,14 @@ export default function Home() {
         </section>
 
         {/* Final CTA */}
-        <section className="text-center pb-8">
+        <section className="flex justify-center pb-8">
           <Link href="/auth">
-            <Button size="lg" className="h-16 px-10 text-lg font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:scale-105 transition-all">
+            <Button 
+              size="lg" 
+              className="group h-16 px-10 text-lg font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 animate-pulse hover:animate-none"
+            >
               COMENZAR MI VALORACION AHORA
-              <ArrowRight className="ml-3 h-6 w-6" />
+              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </section>
