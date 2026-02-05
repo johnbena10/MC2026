@@ -9,19 +9,33 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts"
-import { VALORACION_LEVELS, type ValoracionScores } from "@/lib/valoracion"
+import { CONSCIOUSNESS_LEVELS, type ValoracionScores } from "@/lib/valoracion"
 
 interface ConsciousnessRadarChartProps {
   scores: ValoracionScores
 }
 
 export function ConsciousnessRadarChart({ scores }: ConsciousnessRadarChartProps) {
-  const data = VALORACION_LEVELS.map((level) => ({
-    level: level.name,
-    value: scores[level.key as keyof ValoracionScores],
-    fullMark: 100,
-    color: level.color,
-  }))
+  // Use a subset of levels for better visualization (8 key levels)
+  const keyLevels = [
+    "verguenza",
+    "miedo",
+    "ira",
+    "orgullo",
+    "valentia",
+    "aceptacion",
+    "amor",
+    "paz",
+  ]
+
+  const data = CONSCIOUSNESS_LEVELS
+    .filter((level) => keyLevels.includes(level.key))
+    .map((level) => ({
+      level: level.name,
+      value: scores[level.key as keyof ValoracionScores] || 0,
+      fullMark: 100,
+      color: level.color,
+    }))
 
   return (
     <div className="w-full h-[350px]">
@@ -30,7 +44,7 @@ export function ConsciousnessRadarChart({ scores }: ConsciousnessRadarChartProps
           <PolarGrid stroke="hsl(var(--border))" />
           <PolarAngleAxis
             dataKey="level"
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
           />
           <PolarRadiusAxis
             angle={90}
@@ -41,8 +55,8 @@ export function ConsciousnessRadarChart({ scores }: ConsciousnessRadarChartProps
           <Radar
             name="Puntaje"
             dataKey="value"
-            stroke="#22C55E"
-            fill="#22C55E"
+            stroke="#8B5CF6"
+            fill="#8B5CF6"
             fillOpacity={0.4}
             strokeWidth={2}
           />

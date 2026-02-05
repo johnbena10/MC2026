@@ -1,11 +1,11 @@
-import { VALORACION_LEVELS } from "@/lib/valoracion"
-import { LevelCard } from "@/components/level-card"
+import { LIFE_AREAS } from "@/lib/valoracion"
+import { AreaCard } from "@/components/area-card"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata = {
   title: "Valoración de Conciencia | Escala de Hawkins",
-  description: "Selecciona un nivel de conciencia para analizar cómo se manifiesta en tu vida",
+  description: "Explora las áreas de tu vida donde se manifiesta tu nivel de conciencia",
 }
 
 export default function ValoracionPage() {
@@ -21,24 +21,24 @@ export default function ValoracionPage() {
         </Link>
 
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-light text-foreground mb-4">
-            Valoración de Nivel de Conciencia
+          <h1 className="text-3xl font-light text-foreground mb-4 text-balance">
+            Valoración del Nivel de Conciencia
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Selecciona el nivel de conciencia que deseas explorar. 
-            Después te haremos una pregunta para analizar cómo este nivel 
-            se manifiesta en tu vida.
+          <p className="text-muted-foreground max-w-2xl mx-auto text-balance">
+            Selecciona un área de tu vida para explorar. Tu respuesta será 
+            analizada para revelar qué nivel de conciencia se manifiesta 
+            actualmente en esa dimensión de tu experiencia.
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {VALORACION_LEVELS.map((level) => (
-            <LevelCard key={level.key} level={level} />
+          {LIFE_AREAS.map((area) => (
+            <AreaCard key={area.key} area={area} />
           ))}
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-12">
-          Basado en la Escala de Conciencia del Dr. David Hawkins
+        <p className="text-center text-sm text-muted-foreground mt-12 text-balance">
+          Basado en el Mapa de la Conciencia del Dr. David R. Hawkins
         </p>
       </div>
     </main>

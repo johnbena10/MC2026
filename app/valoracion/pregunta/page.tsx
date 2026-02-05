@@ -2,31 +2,43 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { VALORACION_LEVELS, VALORACION_QUESTION, type ValoracionResult } from "@/lib/valoracion"
+import { LIFE_AREAS, type ValoracionResult } from "@/lib/valoracion"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2, Sparkles, HeartPulse, Heart, Users, Briefcase, Wallet, Flame, User } from "lucide-react"
 import Link from "next/link"
+
+const iconMap = {
+  sparkles: Sparkles,
+  "heart-pulse": HeartPulse,
+  heart: Heart,
+  users: Users,
+  briefcase: Briefcase,
+  wallet: Wallet,
+  flame: Flame,
+  user: User,
+}
 
 export default function PreguntaPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const nivelKey = searchParams.get("nivel")
+  const areaKey = searchParams.get("area")
   
   const [userResponse, setUserResponse] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const selectedLevel = VALORACION_LEVELS.find((l) => l.key === nivelKey)
+  const selectedArea = LIFE_AREAS.find((a) => a.key === areaKey)
+  const Icon = selectedArea ? iconMap[selectedArea.icon as keyof typeof iconMap] : Sparkles
 
   useEffect(() => {
-    if (!nivelKey || !selectedLevel) {
+    if (!areaKey || !selectedArea) {
       router.push("/valoracion")
     }
-  }, [nivelKey, selectedLevel, router])
+  }, [areaKey, selectedArea, router])
 
-  if (!selectedLevel) {
+  if (!selectedArea) {
     return null
   }
 
@@ -45,7 +57,7 @@ export default function PreguntaPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userText: userResponse,
-          selectedLevel: selectedLevel.name,
+          selectedArea: selectedArea.name,
         }),
       })
 
@@ -61,7 +73,8 @@ export default function PreguntaPage() {
         "valoracion-result",
         JSON.stringify({
           ...result,
-          selectedLevel: selectedLevel.name,
+          selectedArea: selectedArea.name,
+          selectedAreaKey: selectedArea.key,
           userResponse: userResponse,
         })
       )
@@ -88,24 +101,22 @@ export default function PreguntaPage() {
         <Card className="border-0 shadow-sm bg-card">
           <CardHeader className="text-center pb-6">
             <div
-              className="inline-flex items-center justify-center gap-3 px-4 py-2 rounded-full mx-auto mb-4"
-              style={{ backgroundColor: `${selectedLevel.color}15` }}
+              className="inline-flex items-center justify-center gap-3 px-5 py-3 rounded-full mx-auto mb-4"
+              style={{ backgroundColor: `${selectedArea.color}15` }}
             >
+              <Icon
+                className="w-6 h-6"
+                style={{ color: selectedArea.color }}
+              />
               <span
-                className="text-2xl font-light"
-                style={{ color: selectedLevel.color }}
+                className="text-base font-medium"
+                style={{ color: selectedArea.color }}
               >
-                {selectedLevel.value}
-              </span>
-              <span
-                className="text-lg font-medium"
-                style={{ color: selectedLevel.color }}
-              >
-                {selectedLevel.name}
+                {selectedArea.name}
               </span>
             </div>
-            <CardTitle className="text-xl font-normal text-foreground">
-              {VALORACION_QUESTION}
+            <CardTitle className="text-xl font-normal text-foreground text-balance">
+              {selectedArea.question}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -115,7 +126,7 @@ export default function PreguntaPage() {
                 setUserResponse(e.target.value)
                 setError(null)
               }}
-              placeholder="Escribe aquí tu experiencia..."
+              placeholder="Escribe aquí tu respuesta con sinceridad..."
               className="min-h-[200px] resize-none text-base bg-background border-border focus:ring-2 focus:ring-ring"
               disabled={isLoading}
             />
@@ -127,10 +138,9 @@ export default function PreguntaPage() {
             <Button
               onClick={handleAnalyze}
               disabled={isLoading || !userResponse.trim()}
-              className="w-full h-12 text-base font-medium"
+              className="w-full h-12 text-base font-medium text-white"
               style={{
-                backgroundColor: selectedLevel.color,
-                color: "#ffffff",
+                backgroundColor: selectedArea.color,
               }}
             >
               {isLoading ? (
@@ -142,6 +152,11 @@ export default function PreguntaPage() {
                 "Analizar mi valoración"
               )}
             </Button>
+
+            <p className="text-xs text-muted-foreground text-center text-balance">
+              Tu respuesta será analizada usando inteligencia artificial para 
+              determinar el nivel de conciencia que se manifiesta en esta área de tu vida.
+            </p>
           </CardContent>
         </Card>
       </div>

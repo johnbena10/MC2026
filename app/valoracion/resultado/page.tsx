@@ -3,21 +3,24 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import {
-  VALORACION_LEVELS,
+  CONSCIOUSNESS_LEVELS,
+  LIFE_AREAS,
   type ValoracionHistoryEntry,
   type ValoracionScores,
 } from "@/lib/valoracion"
 import { ConsciousnessRadarChart } from "@/components/consciousness-radar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Clock, History, Trash2, Save, RotateCcw } from "lucide-react"
+import { ArrowLeft, Clock, History, Trash2, Save, RotateCcw, TrendingUp } from "lucide-react"
 import Link from "next/link"
 
 interface SessionResult {
   scores: ValoracionScores
   predominant: string
+  predominantValue: number
   explanation: string
-  selectedLevel: string
+  selectedArea: string
+  selectedAreaKey: string
   userResponse: string
 }
 
@@ -69,8 +72,12 @@ export default function ResultadoPage() {
     minute: "2-digit",
   })
 
-  const predominantLevel = VALORACION_LEVELS.find(
+  const predominantLevel = CONSCIOUSNESS_LEVELS.find(
     (l) => l.name.toLowerCase() === result.predominant.toLowerCase()
+  )
+
+  const selectedAreaData = LIFE_AREAS.find(
+    (a) => a.key === result.selectedAreaKey
   )
 
   const saveToHistory = () => {
@@ -79,8 +86,9 @@ export default function ResultadoPage() {
       date: currentDate,
       scores: result.scores,
       predominant: result.predominant,
+      predominantValue: result.predominantValue,
       explanation: result.explanation,
-      selectedLevel: result.selectedLevel,
+      selectedArea: result.selectedArea,
       userResponse: result.userResponse,
     }
     setHistory((prev) => [newEntry, ...prev])
@@ -107,6 +115,15 @@ export default function ResultadoPage() {
     router.push("/valoracion")
   }
 
+  // Get top 5 scores for display
+  const topScores = CONSCIOUSNESS_LEVELS
+    .map((level) => ({
+      ...level,
+      score: result.scores[level.key as keyof ValoracionScores] || 0,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+
   return (
     <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -128,15 +145,28 @@ export default function ResultadoPage() {
             <CardTitle className="text-2xl font-light text-foreground">
               Resultado de tu Valoración
             </CardTitle>
+            {selectedAreaData && (
+              <div
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full mx-auto mt-3"
+                style={{ backgroundColor: `${selectedAreaData.color}15` }}
+              >
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: selectedAreaData.color }}
+                >
+                  {selectedAreaData.name}
+                </span>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Predominant Level */}
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-2">
-                Nivel predominante
+                Nivel de conciencia predominante
               </p>
               <div
-                className="inline-flex items-center gap-3 px-6 py-3 rounded-full"
+                className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl"
                 style={{
                   backgroundColor: predominantLevel
                     ? `${predominantLevel.color}15`
@@ -144,44 +174,63 @@ export default function ResultadoPage() {
                 }}
               >
                 <span
-                  className="text-3xl font-light"
+                  className="text-4xl font-light"
                   style={{ color: predominantLevel?.color }}
                 >
-                  {predominantLevel?.value || "—"}
+                  {result.predominantValue || predominantLevel?.value || "—"}
                 </span>
-                <span
-                  className="text-xl font-medium"
-                  style={{ color: predominantLevel?.color }}
-                >
-                  {result.predominant}
-                </span>
+                <div className="text-left">
+                  <span
+                    className="text-xl font-medium block"
+                    style={{ color: predominantLevel?.color }}
+                  >
+                    {result.predominant}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    en la escala de Hawkins
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Radar Chart */}
             <ConsciousnessRadarChart scores={result.scores} />
 
-            {/* Score Breakdown */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {VALORACION_LEVELS.map((level) => {
-                const score = result.scores[level.key as keyof ValoracionScores]
-                return (
+            {/* Top 5 Levels */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">
+                  Niveles más presentes
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                {topScores.map((level, index) => (
                   <div
                     key={level.key}
                     className="flex items-center justify-between p-3 rounded-lg border border-border"
+                    style={{
+                      borderColor: index === 0 ? level.color : undefined,
+                      backgroundColor: index === 0 ? `${level.color}10` : undefined,
+                    }}
                   >
-                    <span className="text-sm text-muted-foreground">
-                      {level.name}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground">
+                        {level.value}
+                      </span>
+                      <span className="text-sm font-medium text-foreground">
+                        {level.name}
+                      </span>
+                    </div>
                     <span
-                      className="text-lg font-medium"
+                      className="text-lg font-semibold"
                       style={{ color: level.color }}
                     >
-                      {score}
+                      {level.score}
                     </span>
                   </div>
-                )
-              })}
+                ))}
+              </div>
             </div>
 
             {/* Explanation */}
@@ -238,7 +287,7 @@ export default function ResultadoPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {history.map((entry) => {
-                const entryLevel = VALORACION_LEVELS.find(
+                const entryLevel = CONSCIOUSNESS_LEVELS.find(
                   (l) =>
                     l.name.toLowerCase() === entry.predominant.toLowerCase()
                 )
@@ -248,45 +297,30 @@ export default function ResultadoPage() {
                     className="flex items-start justify-between p-4 rounded-lg bg-muted/50 border border-border/50"
                   >
                     <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className="text-2xl font-light"
-                          style={{ color: entryLevel?.color }}
-                        >
-                          {entryLevel?.value || "—"}
-                        </span>
-                        <div>
-                          <p
-                            className="text-sm font-medium"
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="text-2xl font-light"
                             style={{ color: entryLevel?.color }}
                           >
-                            {entry.predominant}
-                          </p>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {entry.date}
+                            {entry.predominantValue || entryLevel?.value || "—"}
+                          </span>
+                          <div>
+                            <p
+                              className="text-sm font-medium"
+                              style={{ color: entryLevel?.color }}
+                            >
+                              {entry.predominant}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {entry.selectedArea}
+                            </p>
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* Mini scores */}
-                      <div className="flex flex-wrap gap-2">
-                        {VALORACION_LEVELS.map((level) => {
-                          const score =
-                            entry.scores[level.key as keyof ValoracionScores]
-                          return (
-                            <span
-                              key={level.key}
-                              className="text-xs px-2 py-1 rounded-full"
-                              style={{
-                                backgroundColor: `${level.color}15`,
-                                color: level.color,
-                              }}
-                            >
-                              {level.name.slice(0, 3)}: {score}
-                            </span>
-                          )
-                        })}
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {entry.date}
+                        </div>
                       </div>
 
                       <p className="text-sm text-muted-foreground line-clamp-2">
