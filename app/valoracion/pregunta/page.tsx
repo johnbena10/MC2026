@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LIFE_AREAS, type ValoracionResult } from "@/lib/valoracion"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ const iconMap = {
   user: User,
 }
 
-export default function PreguntaPage() {
+function PreguntaContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const areaKey = searchParams.get("area")
@@ -168,5 +168,13 @@ export default function PreguntaPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function PreguntaPage() {
+  return (
+    <Suspense fallback={null}>
+      <PreguntaContent />
+    </Suspense>
   )
 }
