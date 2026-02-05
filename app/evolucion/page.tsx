@@ -9,6 +9,7 @@ import {
 } from "@/lib/valoracion"
 import { ProgressChart } from "@/components/progress-chart"
 import { SuggestionNotification } from "@/components/suggestion-notification"
+import { Button } from "@/components/ui/button"
 import { Clock, History, Compass, Sparkles, ArrowUp } from "lucide-react"
 
 export default function EvolucionPage() {
