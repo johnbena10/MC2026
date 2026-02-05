@@ -387,14 +387,14 @@ export default function Home() {
         </section>
 
         {/* CTA 1 */}
-        <section className="mb-16 flex justify-center">
-          <Link href="/auth">
+        <section className="mb-16 flex justify-center px-4">
+          <Link href="/auth" className="w-full sm:w-auto">
             <Button 
               size="lg" 
-              className="group h-16 px-10 text-lg font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 animate-pulse hover:animate-none"
+              className="group w-full sm:w-auto h-14 px-8 text-base font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 animate-pulse hover:animate-none"
             >
-              QUIERO DESCUBRIR MI NIVEL DE CONCIENCIA AHORA
-              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+              Descubrir mi nivel
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </section>
@@ -449,14 +449,14 @@ export default function Home() {
         </section>
 
         {/* Final CTA */}
-        <section className="flex justify-center pb-8">
-          <Link href="/auth">
+        <section className="flex justify-center pb-8 px-4">
+          <Link href="/auth" className="w-full sm:w-auto">
             <Button 
               size="lg" 
-              className="group h-16 px-10 text-lg font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 animate-pulse hover:animate-none"
+              className="group w-full sm:w-auto h-14 px-8 text-base font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 animate-pulse hover:animate-none"
             >
-              COMENZAR MI VALORACION AHORA
-              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+              Comenzar valoracion
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </section>
