@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/lib/valoracion"
 import { ConsciousnessRadarChart } from "@/components/consciousness-radar-chart"
 import { Button } from "@/components/ui/button"
-import { Clock, History, Trash2, Save, RotateCcw, TrendingUp, Check, ChevronRight } from "lucide-react"
+import { Clock, History, Trash2, RotateCcw, TrendingUp, Check, ChevronRight } from "lucide-react"
 
 interface SessionResult {
   scores: ValoracionScores
@@ -27,7 +27,7 @@ export default function ResultadoPage() {
   const router = useRouter()
   const [result, setResult] = useState<SessionResult | null>(null)
   const [history, setHistory] = useState<ValoracionHistoryEntry[]>([])
-  const [isSaved, setIsSaved] = useState(false)
+  const hasSaved = useRef(false)
 
   useEffect(() => {
     const storedResult = sessionStorage.getItem("valoracion-result")
@@ -51,11 +51,53 @@ export default function ResultadoPage() {
     }
   }, [router])
 
+  // Auto-save result when it loads
   useEffect(() => {
-    if (history.length > 0) {
-      localStorage.setItem("valoracion-history", JSON.stringify(history))
+    if (result && !hasSaved.current) {
+      hasSaved.current = true
+      const currentDate = new Date().toLocaleString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+
+      const newEntry: ValoracionHistoryEntry = {
+        id: Date.now().toString(),
+        date: currentDate,
+        scores: result.scores,
+        predominant: result.predominant,
+        predominantValue: result.predominantValue,
+        explanation: result.explanation,
+        selectedArea: result.selectedArea,
+        userResponse: result.userResponse,
+      }
+
+      setHistory((prev) => {
+        const updated = [newEntry, ...prev]
+        localStorage.setItem("valoracion-history", JSON.stringify(updated))
+        return updated
+      })
     }
-  }, [history])
+  }, [result])
+
+  const deleteFromHistory = (id: string) => {
+    setHistory((prev) => {
+      const newHistory = prev.filter((entry) => entry.id !== id)
+      if (newHistory.length === 0) {
+        localStorage.removeItem("valoracion-history")
+      } else {
+        localStorage.setItem("valoracion-history", JSON.stringify(newHistory))
+      }
+      return newHistory
+    })
+  }
+
+  const handleNewValoracion = () => {
+    sessionStorage.removeItem("valoracion-result")
+    router.push("/valoracion")
+  }
 
   if (!result) {
     return null
@@ -77,41 +119,6 @@ export default function ResultadoPage() {
     (a) => a.key === result.selectedAreaKey
   )
 
-  const saveToHistory = () => {
-    const newEntry: ValoracionHistoryEntry = {
-      id: Date.now().toString(),
-      date: currentDate,
-      scores: result.scores,
-      predominant: result.predominant,
-      predominantValue: result.predominantValue,
-      explanation: result.explanation,
-      selectedArea: result.selectedArea,
-      userResponse: result.userResponse,
-    }
-    setHistory((prev) => [newEntry, ...prev])
-    setIsSaved(true)
-  }
-
-  const deleteFromHistory = (id: string) => {
-    setHistory((prev) => {
-      const newHistory = prev.filter((entry) => entry.id !== id)
-      if (newHistory.length === 0) {
-        localStorage.removeItem("valoracion-history")
-      }
-      return newHistory
-    })
-  }
-
-  const clearHistory = () => {
-    setHistory([])
-    localStorage.removeItem("valoracion-history")
-  }
-
-  const handleNewValoracion = () => {
-    sessionStorage.removeItem("valoracion-result")
-    router.push("/valoracion")
-  }
-
   const topScores = CONSCIOUSNESS_LEVELS
     .map((level) => ({
       ...level,
@@ -128,6 +135,10 @@ export default function ResultadoPage() {
           <div className="inline-flex items-center gap-2 text-xs text-muted-foreground mb-4">
             <Clock className="h-3.5 w-3.5" />
             {currentDate}
+            <span className="inline-flex items-center gap-1 ml-2 text-green-600">
+              <Check className="h-3 w-3" />
+              Guardado
+            </span>
           </div>
 
           {selectedAreaData && (
@@ -228,30 +239,21 @@ export default function ResultadoPage() {
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 mb-12">
           <Button
-            onClick={saveToHistory}
-            disabled={isSaved}
-            className="flex-1 h-14 text-base font-semibold rounded-full shadow-lg shadow-primary/20"
-          >
-            {isSaved ? (
-              <>
-                <Check className="mr-2 h-5 w-5" />
-                Guardado
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-5 w-5" />
-                Guardar resultado
-              </>
-            )}
-          </Button>
-          <Button
             onClick={handleNewValoracion}
-            variant="outline"
-            className="flex-1 h-14 text-base font-semibold rounded-full bg-transparent"
+            className="flex-1 h-14 text-base font-semibold rounded-full shadow-lg shadow-primary/20"
           >
             <RotateCcw className="mr-2 h-5 w-5" />
             Nueva valoracion
           </Button>
+          <Link href="/evolucion" className="flex-1">
+            <Button
+              variant="outline"
+              className="w-full h-14 text-base font-semibold rounded-full bg-transparent"
+            >
+              <TrendingUp className="mr-2 h-5 w-5" />
+              Ver evolucion
+            </Button>
+          </Link>
         </div>
 
         {/* Link to Evolution */}
@@ -274,19 +276,11 @@ export default function ResultadoPage() {
         {/* History Section */}
         {history.length > 0 && (
           <div className="p-6 rounded-3xl bg-card border border-border/50">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <History className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-semibold text-foreground">
-                  Historial ({history.length})
-                </span>
-              </div>
-              <button
-                onClick={clearHistory}
-                className="text-xs text-muted-foreground hover:text-destructive transition-colors"
-              >
-                Limpiar todo
-              </button>
+            <div className="flex items-center gap-2 mb-4">
+              <History className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">
+                Historial ({history.length})
+              </span>
             </div>
             <div className="space-y-2">
               {history.slice(0, 5).map((entry) => {

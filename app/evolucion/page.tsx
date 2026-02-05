@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import {
   CONSCIOUSNESS_LEVELS,
@@ -10,18 +10,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { Clock, History, Trash2, TrendingUp, Compass } from "lucide-react"
 import {
-  LineChart,
-  Line,
+  ScatterChart,
+  Scatter,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   ReferenceLine,
-  Scatter,
-  ScatterChart,
-  ZAxis,
   Cell,
 } from "recharts"
 
@@ -50,39 +46,76 @@ export default function EvolucionPage() {
     })
   }
 
-  const clearHistory = () => {
-    setHistory([])
-    localStorage.removeItem("valoracion-history")
-  }
+  // Get unique dates and prepare chart data
+  // For the chart: only show the most recent valoracion per area
+  const chartData = useMemo(() => {
+    // Group by area and get most recent for each
+    const latestByArea = new Map<string, ValoracionHistoryEntry>()
+    
+    // Sort by date descending to get most recent first
+    const sortedHistory = [...history].sort((a, b) => {
+      return parseInt(b.id) - parseInt(a.id)
+    })
 
-  // Prepare scatter plot data - each valoracion is a point
-  const scatterData = [...history].reverse().map((entry, index) => {
-    const areaData = LIFE_AREAS.find(
-      (a) => a.name === entry.selectedArea || a.key === entry.selectedArea
-    )
-    return {
-      x: index,
-      y: entry.predominantValue,
-      date: entry.date,
-      levelName: entry.predominant,
-      area: areaData?.name || entry.selectedArea,
-      areaKey: areaData?.key || entry.selectedArea,
-      color: areaData?.color || "#888",
-      id: entry.id,
-      explanation: entry.explanation,
-    }
-  })
+    sortedHistory.forEach((entry) => {
+      const areaKey = LIFE_AREAS.find(
+        (a) => a.name === entry.selectedArea || a.key === entry.selectedArea
+      )?.key || entry.selectedArea
+
+      if (!latestByArea.has(areaKey)) {
+        latestByArea.set(areaKey, entry)
+      }
+    })
+
+    // Get all unique dates from history, sorted chronologically
+    const allDates = [...new Set(history.map((h) => h.date.split(",")[0]))].sort((a, b) => {
+      const [dayA, monthA, yearA] = a.split("/").map(Number)
+      const [dayB, monthB, yearB] = b.split("/").map(Number)
+      const dateA = new Date(yearA, monthA - 1, dayA)
+      const dateB = new Date(yearB, monthB - 1, dayB)
+      return dateA.getTime() - dateB.getTime()
+    })
+
+    // Create data points for each entry, grouped by date
+    const points: Array<{
+      x: number
+      y: number
+      date: string
+      fullDate: string
+      levelName: string
+      area: string
+      areaKey: string
+      color: string
+      id: string
+    }> = []
+
+    history.forEach((entry) => {
+      const dateOnly = entry.date.split(",")[0]
+      const dateIndex = allDates.indexOf(dateOnly)
+      const areaData = LIFE_AREAS.find(
+        (a) => a.name === entry.selectedArea || a.key === entry.selectedArea
+      )
+
+      points.push({
+        x: dateIndex,
+        y: entry.predominantValue,
+        date: dateOnly,
+        fullDate: entry.date,
+        levelName: entry.predominant,
+        area: areaData?.name || entry.selectedArea,
+        areaKey: areaData?.key || entry.selectedArea,
+        color: areaData?.color || "#888",
+        id: entry.id,
+      })
+    })
+
+    return { points, allDates }
+  }, [history])
 
   // Get unique areas with data
   const areasWithData = LIFE_AREAS.filter((area) =>
     history.some((h) => h.selectedArea === area.name || h.selectedArea === area.key)
   )
-
-  // Group data by date for better X axis
-  const dateLabels = scatterData.map((d, i) => ({
-    index: i,
-    label: d.date.split(",")[0],
-  }))
 
   return (
     <main className="min-h-screen bg-background">
@@ -126,31 +159,32 @@ export default function EvolucionPage() {
                   Grafica de Evolucion
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Cada punto representa una valoracion. Colores por area de vida.
+                  Cada columna es una fecha. Los puntos verticales muestran el nivel de cada area evaluada ese dia.
                 </p>
               </div>
 
-              <div className="h-[350px] md:h-[400px] w-full -ml-2 md:ml-0">
+              <div className="h-[350px] md:h-[400px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ScatterChart margin={{ top: 20, right: 10, bottom: 60, left: 0 }}>
+                  <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 10 }}>
                     <CartesianGrid 
                       strokeDasharray="3 3" 
                       stroke="hsl(var(--border))" 
-                      vertical={false}
+                      vertical={true}
                     />
                     <XAxis
                       type="number"
                       dataKey="x"
-                      domain={[0, Math.max(scatterData.length - 1, 1)]}
+                      domain={[-0.5, Math.max(chartData.allDates.length - 0.5, 0.5)]}
                       stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
+                      fontSize={11}
                       tickLine={false}
-                      axisLine={false}
+                      axisLine={{ stroke: 'hsl(var(--border))' }}
                       tick={{ fill: 'hsl(var(--muted-foreground))' }}
                       tickFormatter={(value) => {
-                        const label = dateLabels.find((d) => d.index === value)
-                        return label?.label || ""
+                        const date = chartData.allDates[Math.round(value)]
+                        return date || ""
                       }}
+                      ticks={chartData.allDates.map((_, i) => i)}
                       interval={0}
                       angle={-45}
                       textAnchor="end"
@@ -161,42 +195,47 @@ export default function EvolucionPage() {
                       dataKey="y"
                       domain={[0, 700]}
                       stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
+                      fontSize={11}
                       tickLine={false}
-                      axisLine={false}
+                      axisLine={{ stroke: 'hsl(var(--border))' }}
                       tick={{ fill: 'hsl(var(--muted-foreground))' }}
                       ticks={[20, 100, 200, 310, 400, 500, 600]}
-                      width={35}
+                      width={40}
                     />
-                    <ZAxis range={[100, 100]} />
                     
-                    {/* Reference line at 200 (Courage) */}
+                    {/* Reference line at 200 (Courage - point of power) */}
                     <ReferenceLine 
                       y={200} 
                       stroke="hsl(var(--primary))" 
                       strokeDasharray="5 5" 
-                      strokeOpacity={0.5}
+                      strokeOpacity={0.6}
+                      label={{ 
+                        value: "Valentia (200)", 
+                        position: "right",
+                        fill: "hsl(var(--primary))",
+                        fontSize: 10
+                      }}
                     />
                     
                     <Tooltip
-                      cursor={{ strokeDasharray: '3 3' }}
+                      cursor={{ strokeDasharray: '3 3', stroke: 'hsl(var(--border))' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload
                           return (
-                            <div className="p-3 rounded-xl bg-card border border-border shadow-lg text-sm">
+                            <div className="p-3 rounded-xl bg-card border border-border shadow-lg text-sm max-w-[200px]">
                               <div className="flex items-center gap-2 mb-2">
                                 <div 
-                                  className="w-3 h-3 rounded-full"
+                                  className="w-3 h-3 rounded-full shrink-0"
                                   style={{ backgroundColor: data.color }}
                                 />
-                                <span className="font-medium text-foreground">{data.area}</span>
+                                <span className="font-medium text-foreground truncate">{data.area}</span>
                               </div>
                               <div className="space-y-1">
                                 <p className="text-muted-foreground">
                                   Nivel: <span className="font-semibold text-foreground">{data.y}</span> - {data.levelName}
                                 </p>
-                                <p className="text-xs text-muted-foreground">{data.date}</p>
+                                <p className="text-xs text-muted-foreground">{data.fullDate}</p>
                               </div>
                             </div>
                           )
@@ -205,13 +244,14 @@ export default function EvolucionPage() {
                       }}
                     />
                     
-                    <Scatter data={scatterData} shape="circle">
-                      {scatterData.map((entry, index) => (
+                    <Scatter data={chartData.points} shape="circle">
+                      {chartData.points.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
                           fill={entry.color}
-                          stroke={entry.color}
+                          stroke="white"
                           strokeWidth={2}
+                          r={8}
                         />
                       ))}
                     </Scatter>
@@ -271,19 +311,11 @@ export default function EvolucionPage() {
 
             {/* History List */}
             <div className="p-4 md:p-6 rounded-3xl bg-card border border-border/50">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <History className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-semibold text-foreground">
-                    Historial ({history.length})
-                  </span>
-                </div>
-                <button
-                  onClick={clearHistory}
-                  className="text-xs text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  Limpiar todo
-                </button>
+              <div className="flex items-center gap-2 mb-4">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-semibold text-foreground">
+                  Historial ({history.length})
+                </span>
               </div>
 
               <div className="space-y-2">
