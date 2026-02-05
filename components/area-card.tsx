@@ -39,25 +39,32 @@ export function AreaCard({ area }: AreaCardProps) {
   return (
     <button
       onClick={handleClick}
-      className="group relative flex flex-col items-center justify-center p-6 rounded-xl border border-border bg-card transition-all duration-300 hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-[160px]"
-      style={{
-        borderColor: `${area.color}40`,
-      }}
+      className="group relative flex flex-col items-center justify-center p-4 md:p-6 rounded-2xl md:rounded-3xl bg-card border border-border/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-transparent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-[140px] md:min-h-[160px] overflow-hidden"
     >
       <div
-        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity duration-300"
-        style={{ backgroundColor: area.color }}
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ 
+          background: `linear-gradient(135deg, ${area.color}15 0%, ${area.color}05 100%)` 
+        }}
       />
       <div
-        className="flex items-center justify-center w-14 h-14 rounded-full mb-4 transition-transform duration-300 group-hover:scale-110"
-        style={{ backgroundColor: `${area.color}20` }}
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{ 
+          boxShadow: `inset 0 0 0 1px ${area.color}40`
+        }}
+      />
+      <div
+        className="relative flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl mb-3 md:mb-4 transition-all duration-300 group-hover:scale-110"
+        style={{ 
+          background: `linear-gradient(135deg, ${area.color}25 0%, ${area.color}10 100%)` 
+        }}
       >
         <Icon
-          className="w-7 h-7"
+          className="w-6 h-6 md:w-7 md:h-7 transition-transform duration-300 group-hover:scale-110"
           style={{ color: area.color }}
         />
       </div>
-      <span className="text-sm font-medium text-foreground text-center leading-tight px-2">
+      <span className="relative text-xs md:text-sm font-medium text-foreground text-center leading-tight px-1">
         {area.name}
       </span>
     </button>

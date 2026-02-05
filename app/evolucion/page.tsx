@@ -7,9 +7,8 @@ import {
   LIFE_AREAS,
   type ValoracionHistoryEntry,
 } from "@/lib/valoracion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Clock, History, Trash2, TrendingUp } from "lucide-react"
+import { Clock, History, Trash2, TrendingUp, Compass } from "lucide-react"
 import {
   LineChart,
   Line,
@@ -19,6 +18,11 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  ReferenceLine,
+  Scatter,
+  ScatterChart,
+  ZAxis,
+  Cell,
 } from "recharts"
 
 export default function EvolucionPage() {
@@ -30,7 +34,7 @@ export default function EvolucionPage() {
       try {
         setHistory(JSON.parse(storedHistory))
       } catch {
-        // Invalid data, ignore
+        // Invalid data
       }
     }
   }, [])
@@ -51,293 +55,298 @@ export default function EvolucionPage() {
     localStorage.removeItem("valoracion-history")
   }
 
-  // Prepare chart data - reverse to show chronological order (oldest first)
-  const chartData = [...history].reverse().map((entry) => {
+  // Prepare scatter plot data - each valoracion is a point
+  const scatterData = [...history].reverse().map((entry, index) => {
     const areaData = LIFE_AREAS.find(
       (a) => a.name === entry.selectedArea || a.key === entry.selectedArea
     )
     return {
-      date: entry.date.split(",")[0], // Only date part
-      fullDate: entry.date,
-      level: entry.predominantValue,
+      x: index,
+      y: entry.predominantValue,
+      date: entry.date,
       levelName: entry.predominant,
       area: areaData?.name || entry.selectedArea,
       areaKey: areaData?.key || entry.selectedArea,
-      areaColor: areaData?.color || "#888",
+      color: areaData?.color || "#888",
       id: entry.id,
+      explanation: entry.explanation,
     }
   })
 
-  // Group data by area for the line chart
-  const areaGroups = LIFE_AREAS.map((area) => {
-    const areaEntries = chartData.filter(
-      (d) => d.areaKey === area.key || d.area === area.name
-    )
-    return {
-      ...area,
-      entries: areaEntries,
-      hasData: areaEntries.length > 0,
-    }
-  }).filter((a) => a.hasData)
+  // Get unique areas with data
+  const areasWithData = LIFE_AREAS.filter((area) =>
+    history.some((h) => h.selectedArea === area.name || h.selectedArea === area.key)
+  )
 
-  // Prepare data for multi-line chart
-  const allDates = [...new Set(chartData.map((d) => d.fullDate))].sort()
-  const multiLineData = allDates.map((date) => {
-    const point: Record<string, string | number | undefined> = { date: date.split(",")[0], fullDate: date }
-    LIFE_AREAS.forEach((area) => {
-      const entry = chartData.find(
-        (d) => d.fullDate === date && (d.areaKey === area.key || d.area === area.name)
-      )
-      if (entry) {
-        point[area.key] = entry.level
-      }
-    })
-    return point
-  })
+  // Group data by date for better X axis
+  const dateLabels = scatterData.map((d, i) => ({
+    index: i,
+    label: d.date.split(",")[0],
+  }))
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Volver al inicio
-        </Link>
-
+      <div className="container mx-auto px-4 pt-24 md:pt-32 pb-32 md:pb-16 max-w-5xl">
         <header className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4">
-            <TrendingUp className="h-7 w-7 text-primary" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 mb-6">
+            <TrendingUp className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-light tracking-tight text-foreground mb-2">
-            Evolución de Conciencia
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Tu Evolucion
           </h1>
-          <p className="text-muted-foreground">
-            Visualiza cómo ha evolucionado tu nivel de conciencia en cada área
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Visualiza como ha evolucionado tu nivel de conciencia en cada area de tu vida
           </p>
         </header>
 
         {history.length === 0 ? (
-          <Card className="border-0 shadow-sm bg-card">
-            <CardContent className="py-16 text-center">
-              <History className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-              <h2 className="text-lg font-medium text-foreground mb-2">
-                Sin valoraciones guardadas
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Realiza tu primera valoración para ver tu evolución aquí.
-              </p>
-              <Link href="/valoracion">
-                <Button>Comenzar Valoración</Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <div className="text-center py-20 px-6 rounded-3xl bg-card border border-border/50">
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-6">
+              <History className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground mb-2">
+              Sin valoraciones aun
+            </h2>
+            <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">
+              Realiza tu primera valoracion para comenzar a visualizar tu evolucion.
+            </p>
+            <Link href="/valoracion">
+              <Button className="h-12 px-6 rounded-full font-semibold">
+                <Compass className="mr-2 h-5 w-5" />
+                Comenzar Valoracion
+              </Button>
+            </Link>
+          </div>
         ) : (
           <>
-            {/* Evolution Chart */}
-            <Card className="border-0 shadow-sm bg-card mb-8">
-              <CardHeader>
-                <CardTitle className="text-lg font-medium text-foreground">
-                  Evolución por Área de Vida
-                </CardTitle>
+            {/* Chart Card */}
+            <div className="p-4 md:p-6 rounded-3xl bg-card border border-border/50 mb-6">
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-foreground mb-1">
+                  Grafica de Evolucion
+                </h2>
                 <p className="text-sm text-muted-foreground">
-                  Nivel de conciencia (20-600) a lo largo del tiempo
+                  Cada punto representa una valoracion. Colores por area de vida.
                 </p>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={multiLineData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis
-                        dataKey="date"
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        domain={[0, 700]}
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                        ticks={[20, 100, 200, 310, 400, 500, 600]}
-                        tickFormatter={(value) => {
-                          const level = CONSCIOUSNESS_LEVELS.find((l) => l.value === value)
-                          return level ? `${value}` : `${value}`
-                        }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "8px",
-                          fontSize: "12px",
-                        }}
-                        labelStyle={{ color: "hsl(var(--foreground))" }}
-                        formatter={(value: number, name: string) => {
-                          const area = LIFE_AREAS.find((a) => a.key === name)
-                          const level = CONSCIOUSNESS_LEVELS.find(
-                            (l) => l.value === value || Math.abs(l.value - value) < 30
-                          )
-                          return [
-                            `${value} - ${level?.name || ""}`,
-                            area?.name || name,
-                          ]
-                        }}
-                      />
-                      <Legend
-                        verticalAlign="bottom"
-                        height={36}
-                        formatter={(value: string) => {
-                          const area = LIFE_AREAS.find((a) => a.key === value)
+              </div>
+
+              <div className="h-[350px] md:h-[400px] w-full -ml-2 md:ml-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ScatterChart margin={{ top: 20, right: 10, bottom: 60, left: 0 }}>
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      stroke="hsl(var(--border))" 
+                      vertical={false}
+                    />
+                    <XAxis
+                      type="number"
+                      dataKey="x"
+                      domain={[0, Math.max(scatterData.length - 1, 1)]}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => {
+                        const label = dateLabels.find((d) => d.index === value)
+                        return label?.label || ""
+                      }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis
+                      type="number"
+                      dataKey="y"
+                      domain={[0, 700]}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      ticks={[20, 100, 200, 310, 400, 500, 600]}
+                      width={35}
+                    />
+                    <ZAxis range={[100, 100]} />
+                    
+                    {/* Reference line at 200 (Courage) */}
+                    <ReferenceLine 
+                      y={200} 
+                      stroke="hsl(var(--primary))" 
+                      strokeDasharray="5 5" 
+                      strokeOpacity={0.5}
+                    />
+                    
+                    <Tooltip
+                      cursor={{ strokeDasharray: '3 3' }}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload
                           return (
-                            <span style={{ color: "hsl(var(--muted-foreground))", fontSize: "11px" }}>
-                              {area?.name.split(" ")[0] || value}
-                            </span>
+                            <div className="p-3 rounded-xl bg-card border border-border shadow-lg text-sm">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: data.color }}
+                                />
+                                <span className="font-medium text-foreground">{data.area}</span>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-muted-foreground">
+                                  Nivel: <span className="font-semibold text-foreground">{data.y}</span> - {data.levelName}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{data.date}</p>
+                              </div>
+                            </div>
                           )
-                        }}
-                      />
-                      {areaGroups.map((area) => (
-                        <Line
-                          key={area.key}
-                          type="monotone"
-                          dataKey={area.key}
-                          stroke={area.color}
+                        }
+                        return null
+                      }}
+                    />
+                    
+                    <Scatter data={scatterData} shape="circle">
+                      {scatterData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.color}
+                          stroke={entry.color}
                           strokeWidth={2}
-                          dot={{ fill: area.color, strokeWidth: 0, r: 4 }}
-                          activeDot={{ r: 6, strokeWidth: 0 }}
-                          connectNulls
                         />
                       ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                    </Scatter>
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </div>
 
-                {/* Reference Levels */}
-                <div className="mt-6 pt-6 border-t border-border">
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Niveles de referencia en la escala de Hawkins:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { value: 200, name: "Valentía", note: "punto de inflexión" },
-                      { value: 310, name: "Disposición", note: "" },
-                      { value: 400, name: "Razón", note: "" },
-                      { value: 500, name: "Amor", note: "" },
-                      { value: 600, name: "Paz", note: "" },
-                    ].map((ref) => (
-                      <div
-                        key={ref.value}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted text-xs"
-                      >
-                        <span className="font-medium text-foreground">
-                          {ref.value}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {ref.name}
-                          {ref.note && (
-                            <span className="text-muted-foreground/60">
-                              {" "}({ref.note})
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+              {/* Legend */}
+              <div className="mt-6 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-3">
+                  Areas evaluadas:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {areasWithData.map((area) => (
+                    <div
+                      key={area.key}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
+                      style={{ 
+                        backgroundColor: `${area.color}15`,
+                        color: area.color 
+                      }}
+                    >
+                      <div 
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: area.color }}
+                      />
+                      {area.name.split(" ")[0]}
+                    </div>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* Reference Levels */}
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Niveles de referencia:
+                </p>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {[
+                    { value: 200, name: "Valentia", note: "punto de inflexion" },
+                    { value: 310, name: "Disposicion" },
+                    { value: 400, name: "Razon" },
+                    { value: 500, name: "Amor" },
+                    { value: 600, name: "Paz" },
+                  ].map((ref) => (
+                    <span
+                      key={ref.value}
+                      className="px-2 py-1 rounded-md bg-muted text-muted-foreground"
+                    >
+                      <span className="font-semibold">{ref.value}</span> {ref.name}
+                      {ref.note && <span className="opacity-60"> ({ref.note})</span>}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {/* History List */}
-            <Card className="border-0 shadow-sm bg-card">
-              <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <div className="p-4 md:p-6 rounded-3xl bg-card border border-border/50">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <History className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle className="text-lg font-medium text-foreground">
-                    Historial de Valoraciones
-                  </CardTitle>
-                  <span className="text-sm text-muted-foreground">
-                    ({history.length})
+                  <History className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-semibold text-foreground">
+                    Historial ({history.length})
                   </span>
                 </div>
-                <Button
+                <button
                   onClick={clearHistory}
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors"
                 >
-                  <Trash2 className="h-4 w-4 mr-1" />
                   Limpiar todo
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-3">
+                </button>
+              </div>
+
+              <div className="space-y-2">
                 {history.map((entry) => {
                   const entryLevel = CONSCIOUSNESS_LEVELS.find(
-                    (l) =>
-                      l.name.toLowerCase() === entry.predominant.toLowerCase()
+                    (l) => l.name.toLowerCase() === entry.predominant.toLowerCase()
                   )
                   const areaData = LIFE_AREAS.find(
-                    (a) =>
-                      a.name === entry.selectedArea ||
-                      a.key === entry.selectedArea
+                    (a) => a.name === entry.selectedArea || a.key === entry.selectedArea
                   )
                   return (
                     <div
                       key={entry.id}
-                      className="flex items-start justify-between p-4 rounded-lg bg-muted/50 border border-border/50"
+                      className="flex items-start gap-3 p-3 md:p-4 rounded-xl bg-muted/50 border border-border/30"
                     >
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-1 h-12 rounded-full"
-                              style={{ backgroundColor: areaData?.color }}
-                            />
-                            <div>
-                              <p className="text-sm font-medium text-foreground">
-                                {areaData?.name || entry.selectedArea}
-                              </p>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span
-                                  className="text-lg font-light"
-                                  style={{ color: entryLevel?.color }}
-                                >
-                                  {entry.predominantValue}
-                                </span>
-                                <span
-                                  className="text-sm"
-                                  style={{ color: entryLevel?.color }}
-                                >
-                                  {entry.predominant}
-                                </span>
-                              </div>
+                      <div
+                        className="w-1 h-full min-h-[60px] rounded-full shrink-0"
+                        style={{ backgroundColor: areaData?.color }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              {areaData?.name || entry.selectedArea}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span
+                                className="text-lg font-bold"
+                                style={{ color: entryLevel?.color }}
+                              >
+                                {entry.predominantValue}
+                              </span>
+                              <span
+                                className="text-sm"
+                                style={{ color: entryLevel?.color }}
+                              >
+                                {entry.predominant}
+                              </span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {entry.date}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span className="hidden sm:inline">{entry.date}</span>
+                              <span className="sm:hidden">{entry.date.split(",")[0]}</span>
+                            </span>
+                            <button
+                              onClick={() => deleteFromHistory(entry.id)}
+                              className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-muted"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2 pl-4">
+                        <p className="text-xs text-muted-foreground line-clamp-2">
                           {entry.explanation}
                         </p>
                       </div>
-                      <Button
-                        onClick={() => deleteFromHistory(entry.id)}
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   )
                 })}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </>
         )}
       </div>

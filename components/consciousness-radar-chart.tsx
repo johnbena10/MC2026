@@ -16,7 +16,6 @@ interface ConsciousnessRadarChartProps {
 }
 
 export function ConsciousnessRadarChart({ scores }: ConsciousnessRadarChartProps) {
-  // Use a subset of levels for better visualization (8 key levels)
   const keyLevels = [
     "verguenza",
     "miedo",
@@ -38,36 +37,54 @@ export function ConsciousnessRadarChart({ scores }: ConsciousnessRadarChartProps
     }))
 
   return (
-    <div className="w-full h-[350px]">
+    <div className="w-full h-[280px] md:h-[320px]">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
-          <PolarGrid stroke="hsl(var(--border))" />
+        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+          <PolarGrid 
+            stroke="hsl(var(--border))" 
+            strokeOpacity={0.5}
+          />
           <PolarAngleAxis
             dataKey="level"
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+            tick={{ 
+              fill: "hsl(var(--muted-foreground))", 
+              fontSize: 10 
+            }}
+            tickLine={false}
           />
           <PolarRadiusAxis
             angle={90}
             domain={[0, 100]}
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+            tick={{ 
+              fill: "hsl(var(--muted-foreground))", 
+              fontSize: 9 
+            }}
             tickCount={5}
+            axisLine={false}
           />
           <Radar
             name="Puntaje"
             dataKey="value"
-            stroke="#8B5CF6"
-            fill="#8B5CF6"
-            fillOpacity={0.4}
+            stroke="hsl(var(--primary))"
+            fill="hsl(var(--primary))"
+            fillOpacity={0.3}
             strokeWidth={2}
           />
           <Tooltip
-            contentStyle={{
-              backgroundColor: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: "8px",
-              color: "hsl(var(--foreground))",
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const data = payload[0].payload
+                return (
+                  <div className="p-2.5 rounded-xl bg-card border border-border shadow-lg text-sm">
+                    <p className="font-medium text-foreground">{data.level}</p>
+                    <p className="text-muted-foreground">
+                      Puntaje: <span className="font-semibold text-foreground">{data.value}</span>/100
+                    </p>
+                  </div>
+                )
+              }
+              return null
             }}
-            formatter={(value: number) => [`${value}/100`, "Puntaje"]}
           />
         </RadarChart>
       </ResponsiveContainer>

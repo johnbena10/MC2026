@@ -5,9 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { LIFE_AREAS, type ValoracionResult } from "@/lib/valoracion"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Loader2, Sparkles, HeartPulse, Heart, Users, Briefcase, Wallet, Flame, User } from "lucide-react"
-import Link from "next/link"
+import { Loader2, Sparkles, HeartPulse, Heart, Users, Briefcase, Wallet, Flame, User, Send } from "lucide-react"
 
 const iconMap = {
   sparkles: Sparkles,
@@ -63,12 +61,11 @@ export default function PreguntaPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Error en el análisis")
+        throw new Error(errorData.error || "Error en el analisis")
       }
 
       const result: ValoracionResult = await response.json()
 
-      // Store result and user data in sessionStorage for the results page
       sessionStorage.setItem(
         "valoracion-result",
         JSON.stringify({
@@ -89,76 +86,86 @@ export default function PreguntaPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Link
-          href="/valoracion"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Volver a selección
-        </Link>
-
-        <Card className="border-0 shadow-sm bg-card">
-          <CardHeader className="text-center pb-6">
-            <div
-              className="inline-flex items-center justify-center gap-3 px-5 py-3 rounded-full mx-auto mb-4"
-              style={{ backgroundColor: `${selectedArea.color}15` }}
+      <div className="container mx-auto px-4 pt-24 md:pt-32 pb-32 md:pb-16 max-w-2xl">
+        {/* Area Badge */}
+        <div className="text-center mb-8">
+          <div
+            className="inline-flex items-center gap-3 px-5 py-3 rounded-full"
+            style={{ 
+              background: `linear-gradient(135deg, ${selectedArea.color}20 0%, ${selectedArea.color}08 100%)`,
+              border: `1px solid ${selectedArea.color}30`
+            }}
+          >
+            <Icon
+              className="w-5 h-5"
+              style={{ color: selectedArea.color }}
+            />
+            <span
+              className="text-sm font-semibold"
+              style={{ color: selectedArea.color }}
             >
-              <Icon
-                className="w-6 h-6"
-                style={{ color: selectedArea.color }}
-              />
-              <span
-                className="text-base font-medium"
-                style={{ color: selectedArea.color }}
-              >
-                {selectedArea.name}
-              </span>
-            </div>
-            <CardTitle className="text-xl font-normal text-foreground text-balance">
-              {selectedArea.question}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+              {selectedArea.name}
+            </span>
+          </div>
+        </div>
+
+        {/* Question */}
+        <div className="text-center mb-8">
+          <h1 className="text-xl md:text-2xl font-semibold text-foreground text-balance leading-relaxed">
+            {selectedArea.question}
+          </h1>
+        </div>
+
+        {/* Input Area */}
+        <div className="space-y-4">
+          <div className="relative">
             <Textarea
               value={userResponse}
               onChange={(e) => {
                 setUserResponse(e.target.value)
                 setError(null)
               }}
-              placeholder="Escribe aquí tu respuesta con sinceridad..."
-              className="min-h-[200px] resize-none text-base bg-background border-border focus:ring-2 focus:ring-ring"
+              placeholder="Escribe aqui tu respuesta con sinceridad..."
+              className="min-h-[200px] md:min-h-[240px] resize-none text-base bg-card border-border/50 rounded-2xl p-5 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
               disabled={isLoading}
             />
+            <div className="absolute bottom-4 right-4 text-xs text-muted-foreground">
+              {userResponse.length} caracteres
+            </div>
+          </div>
 
-            {error && (
-              <p className="text-sm text-destructive text-center">{error}</p>
+          {error && (
+            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
+              {error}
+            </div>
+          )}
+
+          <Button
+            onClick={handleAnalyze}
+            disabled={isLoading || !userResponse.trim()}
+            className="w-full h-14 text-base font-semibold rounded-full shadow-lg transition-all"
+            style={{
+              backgroundColor: isLoading || !userResponse.trim() ? undefined : selectedArea.color,
+              boxShadow: isLoading || !userResponse.trim() ? undefined : `0 8px 32px ${selectedArea.color}40`
+            }}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Analizando con IA...
+              </>
+            ) : (
+              <>
+                Analizar mi valoracion
+                <Send className="ml-2 h-5 w-5" />
+              </>
             )}
+          </Button>
 
-            <Button
-              onClick={handleAnalyze}
-              disabled={isLoading || !userResponse.trim()}
-              className="w-full h-12 text-base font-medium text-white"
-              style={{
-                backgroundColor: selectedArea.color,
-              }}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Analizando...
-                </>
-              ) : (
-                "Analizar mi valoración"
-              )}
-            </Button>
-
-            <p className="text-xs text-muted-foreground text-center text-balance">
-              Tu respuesta será analizada usando inteligencia artificial para 
-              determinar el nivel de conciencia que se manifiesta en esta área de tu vida.
-            </p>
-          </CardContent>
-        </Card>
+          <p className="text-xs text-muted-foreground/60 text-center text-balance pt-2">
+            Tu respuesta sera analizada usando GPT-4o para determinar el nivel de conciencia.
+          </p>
+        </div>
       </div>
     </main>
   )
