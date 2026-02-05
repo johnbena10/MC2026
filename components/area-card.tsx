@@ -33,7 +33,7 @@ export function AreaCard({ area }: AreaCardProps) {
   const Icon = iconMap[area.icon as keyof typeof iconMap] || Sparkles
 
   const handleClick = () => {
-    router.push(`/valoracion/pregunta?area=${encodeURIComponent(area.key)}`)
+    router.push(`/valoracion/entrevista?area=${encodeURIComponent(area.key)}`)
   }
 
   return (
