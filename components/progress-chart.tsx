@@ -127,9 +127,9 @@ export function ProgressChart({ history }: ProgressChartProps) {
         >
           Todas
         </button>
-        {areasWithData.map((area) => (
+        {areasWithData.map((area, index) => (
           <button
-            key={area.key}
+            key={`filter-${area.key}-${index}`}
             onClick={() => setSelectedArea(area.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all inline-flex items-center gap-1.5`}
             style={{
@@ -202,10 +202,10 @@ export function ProgressChart({ history }: ProgressChartProps) {
                     <div className="p-3 rounded-xl bg-card border border-border shadow-lg text-sm max-w-[220px]">
                       <p className="font-medium text-foreground mb-2">{label}</p>
                       <div className="space-y-1">
-                        {activePayloads.map((p) => {
+                        {activePayloads.map((p, idx) => {
                           const area = LIFE_AREAS.find((a) => a.key === p.dataKey)
                           return (
-                            <div key={p.dataKey} className="flex items-center justify-between gap-3">
+                            <div key={`tooltip-${p.dataKey}-${idx}`} className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-1.5">
                                 <div 
                                   className="w-2 h-2 rounded-full shrink-0"
@@ -276,9 +276,9 @@ export function ProgressChart({ history }: ProgressChartProps) {
       {selectedArea === "all" && (
         <div className="mt-4 pt-4 border-t border-border">
           <div className="flex flex-wrap gap-2">
-            {areasWithData.map((area) => (
+            {areasWithData.map((area, index) => (
               <div
-                key={area.key}
+                key={`legend-${area.key}-${index}`}
                 className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px]"
                 style={{ backgroundColor: `${area.color}15` }}
               >
