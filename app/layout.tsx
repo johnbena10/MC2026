@@ -1,15 +1,16 @@
 import React from "react"
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Navigation } from "@/components/navigation"
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Hawkins Consciousness Test',
-  description: 'Análisis de nivel de conciencia basado en la escala del Dr. David Hawkins utilizando inteligencia artificial',
+  title: 'Mapa de Conciencia | Escala de Hawkins',
+  description: 'Explora y mide tu nivel de conciencia en diferentes areas de tu vida usando inteligencia artificial y la escala del Dr. David R. Hawkins',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -30,14 +31,26 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f5f3ff' },
+    { media: '(prefers-color-scheme: dark)', color: '#1a1625' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
+    <html lang="es">
+      <body className="font-sans antialiased">
+        <Navigation />
         {children}
         <Analytics />
       </body>
