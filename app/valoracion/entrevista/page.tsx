@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LIFE_AREAS } from "@/lib/valoracion"
 import { type TranscriptEntry } from "@/lib/coaching"
@@ -32,7 +32,7 @@ const iconMap = {
   user: User,
 }
 
-export default function EntrevistaPage() {
+function EntrevistaContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const areaKey = searchParams.get("area")
@@ -332,5 +332,17 @@ export default function EntrevistaPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function EntrevistaPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </main>
+    }>
+      <EntrevistaContent />
+    </Suspense>
   )
 }
