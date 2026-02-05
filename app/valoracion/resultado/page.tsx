@@ -13,7 +13,7 @@ import { ConsciousnessRadarChart } from "@/components/consciousness-radar-chart"
 import { ProgressChart } from "@/components/progress-chart"
 import { SuggestionNotification } from "@/components/suggestion-notification"
 import { Button } from "@/components/ui/button"
-import { Clock, History, RotateCcw, TrendingUp, Check, ChevronRight } from "lucide-react"
+import { Clock, History, RotateCcw, TrendingUp, Check, ChevronRight, Sparkles, ArrowUp } from "lucide-react"
 
 interface SessionResult {
   scores: ValoracionScores
@@ -266,6 +266,22 @@ export default function ResultadoPage() {
             </div>
           </div>
           <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+        </Link>
+
+        {/* Upgrade CTA */}
+        <Link href="/vsl" className="block mb-6">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 hover:border-primary/40 transition-all group">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Eleva tu nivel de conciencia</p>
+                <p className="text-xs text-muted-foreground">Descubre como transformar vidas desde el escenario</p>
+              </div>
+            </div>
+            <ArrowUp className="w-4 h-4 text-primary group-hover:translate-y-[-2px] transition-transform" />
+          </div>
         </Link>
 
         {/* History Section */}

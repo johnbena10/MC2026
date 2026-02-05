@@ -9,8 +9,7 @@ import {
 } from "@/lib/valoracion"
 import { ProgressChart } from "@/components/progress-chart"
 import { SuggestionNotification } from "@/components/suggestion-notification"
-import { Button } from "@/components/ui/button"
-import { Clock, History, Compass } from "lucide-react"
+import { Clock, History, Compass, Sparkles, ArrowUp } from "lucide-react"
 
 export default function EvolucionPage() {
   const [history, setHistory] = useState<ValoracionHistoryEntry[]>([])
@@ -36,9 +35,54 @@ export default function EvolucionPage() {
     })
   )
 
+  // Calculate last day average
+  const getLastDayAverage = () => {
+    if (history.length === 0) return null
+    
+    // Get the most recent date
+    const sortedHistory = [...history].sort((a, b) => {
+      const dateA = new Date(a.date.split(",")[0].split("/").reverse().join("-"))
+      const dateB = new Date(b.date.split(",")[0].split("/").reverse().join("-"))
+      return dateB.getTime() - dateA.getTime()
+    })
+    
+    const lastDate = sortedHistory[0].date.split(",")[0].trim()
+    const lastDayEntries = history.filter(h => h.date.split(",")[0].trim() === lastDate)
+    
+    if (lastDayEntries.length === 0) return null
+    
+    const average = Math.round(
+      lastDayEntries.reduce((acc, h) => acc + h.predominantValue, 0) / lastDayEntries.length
+    )
+    
+    return { average, date: lastDate, count: lastDayEntries.length }
+  }
+
+  const lastDayData = getLastDayAverage()
+
   return (
     <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-24 md:pt-32 pb-32 md:pb-16 max-w-5xl">
+      {/* Motivational Banner */}
+      {lastDayData && (
+        <div className="fixed top-16 md:top-20 left-0 right-0 z-40 px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center justify-center gap-3 py-2.5 px-4 rounded-full bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 backdrop-blur-sm text-xs md:text-sm">
+              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="text-muted-foreground">
+                Tu promedio del <span className="font-medium text-foreground">{lastDayData.date}</span> fue{" "}
+                <span className="font-bold text-primary">{lastDayData.average}</span>
+              </span>
+              <span className="text-muted-foreground/60">|</span>
+              <span className="text-foreground font-medium flex items-center gap-1">
+                <ArrowUp className="h-3 w-3 text-accent" />
+                Hoy puedes calibrar mas alto
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="container mx-auto px-4 pt-32 md:pt-40 pb-32 md:pb-16 max-w-5xl">
 
         {history.length === 0 ? (
           <div className="text-center py-20 px-6 rounded-3xl bg-card border border-border/50">
@@ -88,6 +132,22 @@ export default function EvolucionPage() {
                 <p className="text-xs text-muted-foreground mt-1">Promedio</p>
               </div>
             </div>
+
+            {/* Upgrade CTA */}
+            <Link href="/vsl" className="block mb-4">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 hover:border-primary/40 transition-all group">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Eleva tu nivel de conciencia</p>
+                    <p className="text-xs text-muted-foreground">Descubre como transformar vidas desde el escenario</p>
+                  </div>
+                </div>
+                <ArrowUp className="w-4 h-4 text-primary group-hover:translate-y-[-2px] transition-transform" />
+              </div>
+            </Link>
 
             {/* History List */}
             <div className="p-4 md:p-6 rounded-3xl bg-card border border-border/50">
@@ -152,15 +212,7 @@ export default function EvolucionPage() {
               </div>
             </div>
 
-            {/* CTA */}
-            <div className="mt-6 text-center">
-              <Link href="/valoracion">
-                <Button className="h-12 px-6 rounded-full font-semibold">
-                  <Compass className="mr-2 h-5 w-5" />
-                  Nueva Valoracion
-                </Button>
-              </Link>
-            </div>
+
           </>
         )}
       </div>
